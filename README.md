@@ -15,7 +15,7 @@
 
 | Название | Описание | Технологии | Эффект | Ссылка |
 |---------|----------|------------|--------|--------|
-| **Administration Bot** | Telegram-бот для учёта опозданий, ежедневной выручки, среднего чека и формирования отчётов | Python, `aiogram`, SQLite, Pandas | Время отчёта: **2 ч → 10 мин**<br>Ошибки: **~4/нед → 0** | [→](https://github.com/Ang1983/Portfolio-with-projects/blob/main/PR_1.Telegram_bot/README.md) |
+| **Administration Bot** | Telegram-бот для учёта опозданий, ежедневной выручки, среднего чека и формирования отчётов | Python, `aiogram`, PostgreSQL, Pandas | Время отчёта: **2 ч → 10 мин**<br>Ошибки: **~4/нед → 0** | [→](https://github.com/Ang1983/Portfolio-with-projects/blob/main/PR_1.Telegram_bot/README.md) |
 | **TG Mini App** | Веб-мини-приложение в Telegram для сотрудников в качестве личного кабинета | JavaScript, Telegram Web Apps, Python backend | Снижение нагрузки на администраторов на **~40%** | [→](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_2.Web_app_for_tg_bot/README.md) |
 | **Loyalty club (в разработке)** | Система лояльности для постоянных посетителей на базе платформы telegram | JavaScript, Telegram Web Apps/Max Web Apps, Django | Реализация системы лояльности оптимальным способом с минимальной нагрузкой на сотрудников в условиях неинтегрируемых кассовых аппаратов, используемых сетью заведений | [→](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_2.Web_app_for_tg_bot/README.md) |
 
