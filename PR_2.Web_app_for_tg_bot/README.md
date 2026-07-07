@@ -17,7 +17,7 @@
 - **PostgreSQL** - реляционная база данных
 
 **Frontend:**
-- **JavaScript (ES6+)**
+- **JavaScript**
 - **HTML5 / CSS3**
 - **Telegram Web App API** - интеграция с Telegram
 
