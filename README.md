@@ -27,9 +27,9 @@
 
 | Название | Описание | Технологии | Эффект | Ссылка |
 |---------|----------|------------|--------|--------|
-| **Administration Bot** | Telegram-бот для учёта опозданий, ежедневной выручки, среднего чека и формирования отчётов | Python, `aiogram`, SQLite, Pandas | Время отчёта: **2 ч → 10 мин**<br>Ошибки: **~4/нед → 0** | [→]([(https://github.com/Ang1983/Portfolio-with-projects/](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_1.Telegram_bot)) |
-| **TG Mini App** | Веб-мини-приложение в Telegram для сотрудников в качестве личного кабинета | JavaScript, Telegram Web Apps, Python backend | Снижение нагрузки на администраторов на **~40%** | [→]([https://github.com/Ang1983/tg_mini_app](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_2.Web_app_for_tg_bot)) |
-| **Loyalty club (в разработке)** | Система лояльности для постоянных посетителей на базе платформы telegram | Python (geopandas, sklearn), Power BI / Datalens | [→]([https://github.com/Ang1983/tg_mini_app](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_2.Web_app_for_tg_bot)) |
+| **Administration Bot** | Telegram-бот для учёта опозданий, ежедневной выручки, среднего чека и формирования отчётов | Python, `aiogram`, SQLite, Pandas | Время отчёта: **2 ч → 10 мин**<br>Ошибки: **~4/нед → 0** | [→](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_1.Telegram_bot) |
+| **TG Mini App** | Веб-мини-приложение в Telegram для сотрудников в качестве личного кабинета | JavaScript, Telegram Web Apps, Python backend | Снижение нагрузки на администраторов на **~40%** | [→](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_2.Web_app_for_tg_bot) |
+| **Loyalty club (в разработке)** | Система лояльности для постоянных посетителей на базе платформы telegram | JavaScript, Telegram Web Apps, Python backend | Реализация системы лояльности оптимальным способом с минимальной нагрузкой на сотрудников в условиях неинтегрируемых кассовых аппаротов, используемых сетью заведений | [→](https://github.com/Ang1983/Portfolio-with-projects/tree/main/PR_2.Web_app_for_tg_bot) |
 
 > Все проекты — **реальные кейсы**, адаптированные под средний и микро бизнес (кофейни, retail). Данные обезличены для публичного размещения.
 
