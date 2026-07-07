@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Loyalty</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="theme-color" content="#ffffff">
+
+</head>
+<body>
+
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="flower-loader"></div>
+            <p>...Собираюсь...</p>
+        </div>
+    </div>
+
+    <div id="auth-screen" class="screen hidden">
+        <div class="auth-container">
+            <div class="flower-avatar">
+                <img src="https://backend-loyalty-app-ang1983.amvera.io/media/flower.png" alt="Flower">
+            </div>
+            <h1>Добро пожаловать!</h1>
+            <p class="subtitle">Выберите действие</p>
+
+            <div class="auth-buttons">
+                <button class="menu-btn" onclick="app.openCouponScanner()">
+                    Получить напиток по акции
+                </button>
+                <button class="menu-btn" onclick="app.showScreen('loyalty-register-screen')">
+                    Получить карту лояльности
+                </button>
+                <button class="menu-btn" onclick="user.showMenu()">
+                    Посмотреть меню
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scan-coupon-screen" class="screen hidden">
+        <div class="scan-coupon-container">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Отсканируйте QR-код на листовке</h2>
+
+            <div class="scanner-video-container">
+                <div id="coupon-qr-reader" style="width: 100%; border-radius: 12px;"></div>
+                <div class="scanner-hint">
+                    <p>Наведите камеру на QR-код</p>
+                    <p class="small">Купон на обратной стороне листовки</p>
+                </div>
+            </div>
+
+            <div id="coupon-scan-result" class="scan-result hidden"></div>
+        </div>
+    </div>
+
+    <div id="coupon-screen" class="screen hidden">
+        <div class="coupon-container">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Какой вам сделать напиток?</h2>
+
+            <div class="drink-grid" id="drink-grid">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="syrup-screen" class="screen hidden">
+        <div class="syrup-container">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Добавить сироп?</h2>
+
+            <div class="syrup-grid" id="syrup-grid">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="qr-screen" class="screen hidden">
+        <div class="qr-container">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Ваш купон</h2>
+
+            <div class="qr-image-container">
+                <img id="qr-image" src="" alt="QR код">
+            </div>
+
+            <p class="qr-info">Покажите этот код бариста</p>
+        </div>
+    </div>
+
+    <div id="loyalty-register-screen" class="screen hidden">
+        <div class="register-container">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h3>Давайте познакомимся</h3>
+
+            <form id="loyalty-form" onsubmit="loyalty.register(event)">
+                <div class="form-group">
+                    <label>Как вас зовут? *</label>
+                    <input type="text" id="full_name" required placeholder="Иван Иванов">
+                </div>
+
+                <div class="form-group">
+                    <label>Дата рождения</label>
+                    <input type="text" id="date_of_birth" placeholder="ДД.ММ.ГГГГ">
+                </div>
+
+                <div class="form-group">
+                    <label>Как вы узнали о нас? *</label>
+                    <select id="how_find" required>
+                        <option value="">...</option>
+                    </select>
+                </div>
+                <div>
+                </div>
+
+                <button type="submit" class="menu-btn">Получить карточку</button>
+            </form>
+        </div>
+    </div> 
+
+    <div id="student-qr-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="user.closeStudentQRScanner()"></div>
+        <div class="modal-container student-qr-modal">
+            <div class="modal-header">
+                <h2>Подтверждение скидки</h2>
+                <button class="modal-close-btn" onclick="user.closeStudentQRScanner()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="student-qr-instruction">
+                    <p><strong>Отсканируйте QR</strong></p>
+                    <p class="small">После проверки студенческого билета</p>
+                </div>
+                
+                <div class="qr-scanner-container" id="student-qr-reader"></div>
+                
+                <div id="student-scan-result" class="scan-result hidden">
+                    <div class="result-icon" id="student-result-icon"></div>
+                    <h3 id="student-result-title"></h3>
+                    <p id="student-result-message"></p>
+                    <div class="action-buttons" id="student-result-actions"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="user-profile-screen" class="screen hidden">
+        <div class="profile-header">
+            <div class="flower-avatar-large avatar-upload-container">
+                <img id="user-avatar" src="https://backend-loyalty-app-ang1983.amvera.io/media/flower.png" alt="User Avatar">
+                <label for="avatar-upload" class="avatar-upload-btn">
+                </label>
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="user.uploadAvatar(this)">
+            </div>
+            <h1 id="user-name">Имя пользователя</h1>
+            <p class="bonus-balance">Баланс бонусов: <span id="bonus-amount">0</span></p>
+        </div>
+        <div class="profile-menu">
+            <button class="menu-btn" onclick="user.showHistory()">
+                История заказов
+            </button>
+            <button class="menu-btn" onclick="user.showLoyaltyCard()">
+                Карта лояльности
+            </button>
+            <button class="menu-btn" onclick="user.showMenu()">
+                Посмотреть меню
+            </button>
+        </div>
+    </div>
+
+    <div id="menu-screen" class="screen hidden">
+        <div class="screen-header">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h1>Меню</h1>
+            <div class="header-spacer"></div>
+        </div>
+        
+        <div class="categories-wrapper">
+            <div id="menu-categories" class="categories-scroll">
+            </div>
+        </div>
+
+        <div id="menu-container" class="menu-container">
+
+            <div id="menu-content" class="menu-content">
+            </div>
+        </div>
+    </div>
+
+    <div id="product-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="user.closeProductModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="user.closeProductModal()">✕</button>
+            
+            <div class="modal-image">
+                <img id="modal-product-image" src="" alt="">
+            </div>
+            
+            <div class="modal-info">
+                <span id="modal-product-category" class="modal-category"></span>
+                <h2 id="modal-product-name" class="modal-title"></h2>
+                <p id="modal-product-description" class="modal-description hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="purchase-history-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-container purchase-history-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">История заказов</h2>
+                <button class="modal-close-btn" onclick="user.closeHistory()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="history-list" class="purchase-history-list">
+                </div>
+                
+                <div id="history-empty" class="history-empty hidden">
+                    <div class="empty-icon">😔</div>
+                    <p>У вас пока нет заказов</p>
+                </div>
+
+                <div id="history-loading" class="history-loading hidden">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loyalty-qr-screen" class="screen hidden">
+        <button class="back-btn" onclick="app.showScreen('user-profile-screen')">
+            Назад
+        </button>
+        <div class="loyalty-card-container">
+            <h2>Карта лояльности</h2>
+
+            <div class="loyalty-card-content">
+                <div class="user-info">
+                    <h3 id="loyalty-user-name">Котенок</h3>
+                    <p class="balance">Баланс: <span id="loyalty-balance">1250</span> бонусов</p>
+                </div>
+
+                <div class="qr-section" id="credit-section">
+                    <div class="qr-placeholder">
+                        <div class="qr-code-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="3" height="3" rx="1"/>
+                                <rect x="18" y="14" width="3" height="3" rx="1"/>
+                                <rect x="14" y="18" width="3" height="3" rx="1"/>
+                                <rect x="18" y="18" width="3" height="3" rx="1"/>
+                            </svg>
+                        </div>
+                        <p class="qr-label">Scan to Credit</p>
+                        <p class="qr-hint">QR Code Placeholder</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="employee-profile-screen" class="screen hidden">
+        <div class="employee-container">
+            <div class="profile-header">
+                <div class="flower-avatar-large avatar-upload-container">
+                    <img id="user-avatar" src="https://backend-loyalty-app-ang1983.amvera.io/media/flower.png" alt="User Avatar">
+                    <label for="avatar-upload" class="avatar-upload-btn">
+                    </label>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="user.uploadAvatar(this)">
+                </div>
+                <h1 id="employee-name">Имя сотрудника</h1>
+            </div>
+
+            <div class="employee-menu">
+                <button class="menu-btn" onclick="employee.showRoleSelection()">
+                    Начать смену
+                </button>
+                <button class="menu-btn" onclick="employee.showSchedule()">
+                    Мой график
+                </button>
+                <button class="menu-btn" onclick="window.location.href='https://backend-loyalty-app-ang1983.amvera.io/api/full-grafic'">
+                    График всех сотрудников
+                </button>
+                <button class="menu-btn" onclick="employee.showSalary()">
+                    Зарплата за неделю
+                </button>
+                <button class="menu-btn" onclick="employee.openQRScanner()">
+                    Сканировать QR
+                </button>
+                <button class="menu-btn" onclick="employee.showDailyStats()">
+                    Статистика за день
+                </button>
+                <button class="menu-btn" onclick="employee.showMilkOrder()">
+                    Заказать молоко
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-profile-screen" class="screen hidden">
+        <div class="admin-container">
+            <div class="profile-header">
+                <div class="flower-avatar-large avatar-upload-container">
+                    <img id="user-avatar" src="https://backend-loyalty-app-ang1983.amvera.io/media/flower.png" alt="User Avatar">
+                    <label for="avatar-upload" class="avatar-upload-btn">
+                    </label>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="user.uploadAvatar(this)">
+                </div>
+                <h1 id="admin-name">Администратор</h1>
+                <p class="admin-role"></p>
+            </div>
+
+            <div class="admin-menu">
+                <button class="menu-btn" onclick="employee.showRoleSelection()">
+                    Начать смену
+                </button>
+                <button class="menu-btn" onclick="employee.showSchedule()">
+                    Мой график
+                </button>
+                <button class="menu-btn" onclick="window.location.href='https://backend-loyalty-app-ang1983.amvera.io/api/full-grafic'">
+                    График всех сотрудников
+                </button>
+                <button class="menu-btn" onclick="employee.showSalary()">
+                    Зарплата за неделю
+                </button>
+                <button class="menu-btn" onclick="employee.openQRScanner()">
+                    Сканировать QR
+                </button>
+                <button class="menu-btn" onclick="employee.showDailyStats()">
+                    Статистика за день
+                </button>
+                <button class="menu-btn" onclick="employee.showMilkOrder()">
+                    Заказать молоко
+                </button>
+                <button class="menu-btn admin-only" onclick="admin.showMilkOrders()">
+                    Заказы молока за сегодня
+                </button>
+                <button class="menu-btn admin-only" onclick="admin.manageSchedule()">
+                    Управление графиком
+                </button>
+                <button class="menu-btn admin-only" onclick="admin.exportData()">
+                    Экспорт данных
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="schedule-modal" class="modal modal-large hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="schedule-month-title"></h2>
+                    <div id="pref-mode-indicator" class="hidden" style="margin-top: 8px; font-size: 14px; color: #8B5CF6;">
+                        Режим заполнения пожеланий
+                    </div>
+                </div>
+                <button class="modal-close" onclick="employee.closeSchedule()">✕</button>
+            </div>
+
+            <div class="schedule-controls" style="padding: 15px 24px; border-bottom: 1px solid #e5e7eb; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" id="view-mode-btn" onclick="employee.setViewMode()">Просмотр графика</button>
+                <button class="btn btn-secondary" id="fill-mode-btn" onclick="employee.setFillMode()">Заполнить на следующий месяц</button>
+            </div>
+
+            <div id="shift-toggles-panel" class="hidden" style="padding: 15px 24px; background: #f9fafb;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #374151;">Выберите тип смены для добавления:</p>
+                <div class="shift-toggles" style="display: flex; gap: 10px;">
+                    <button class="tog" data-shift="morning" onclick="employee.toggleShiftType(this)">Утро</button>
+                    <button class="tog" data-shift="evening" onclick="employee.toggleShiftType(this)">Вечер</button>
+                    <button class="tog" data-shift="full" onclick="employee.toggleShiftType(this)">Полная</button>
+                </div>
+                <p style="margin: 8px 0 0 0; font-size: 13px; color: #6b7280;">Нажмите на одну или несколько кнопок, затем кликайте на дни в календаре</p>
+            </div>
+
+            <div id="day-point-picker-modal" class="modal hidden">
+                <div class="modal-content" style="max-width: 350px;">
+                    <div class="modal-header">
+                        <h3>Точка на <span id="point-picker-date"></span></h3>
+                        <button class="modal-close" onclick="employee.closeDayPointPicker()">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="font-size: 13px; color: #666; margin-bottom: 12px;">
+                            Выберите точку. Если не выберете, будет поставлено по приоритетам.
+                        </p>
+                        <div id="point-picker-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        </div>
+                    </div>
+                </div>
+            </div>            
+
+            <div id="points-selector-panel" class="hidden" style="padding: 15px 24px; background: #f3f4f6;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">
+                            Приоритетные точки (макс 3):
+                        </label>
+                        <div id="pref-priority" class="point-selector"></div>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">
+                            Запрещённые точки:
+                        </label>
+                        <div id="pref-blocked" class="point-selector"></div>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="calendar-container" style="padding: 24px;">
+                <div id="calendar-header"></div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+                <div id="shift-details" class="shift-details hidden"></div>
+            </div>
+
+            <div id="pref-actions" class="hidden" style="padding: 20px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="employee.clearPreferences()">Очистить всё</button>
+                <button class="btn btn-primary" onclick="employee.savePreferences()">Сохранить пожелания</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="qr-scanner-screen" class="screen hidden">
+        <div class="scanner-container">
+            <button class="back-btn" onclick="scanner.close()">Назад</button>
+            <h2>Сканирование QR</h2>
+    
+            <div class="scanner-video-container">
+                <video id="scanner-video" autoplay playsinline></video>
+                <canvas id="scanner-canvas" hidden></canvas>
+                <div class="scanner-overlay"></div>
+            </div>
+    
+            <div class="scanner-result hidden">
+                <div id="scanner-result-text" style="margin-bottom: 15px; font-size: 16px; white-space: pre-line;"></div>
+
+                <div id="bonus-input-container" class="hidden">
+                    <label class="bonus-label">
+                        Списать бонусов:
+                    </label>
+                    
+                    <input type="number" id="bonus-amount-input" value="0" min="0" placeholder="0"
+                           class="bonus-input">
+                           
+                    <div id="bonus-warning" class="bonus-warning hidden">
+                        Введено больше, чем доступно
+                    </div>
+                </div>
+                
+                <div id="own-cup-container" class="hidden" style="margin-bottom: 20px;">
+                    <label style="font-size: 16px; font-weight: 500; display: block; margin-bottom: 8px;">
+                        Своих стаканов:
+                    </label>
+                    
+                    <div class="own-cup-counter" style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" 
+                                onclick="scanner.decrementOwnCup()" 
+                                style="width: 40px; height: 40px; font-size: 20px; font-weight: bold; 
+                                       background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; 
+                                       cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            −
+                        </button>
+
+                        <input type="number" id="own-cup-count" value="0" min="0" max="10" 
+                               readonly
+                               style="width: 60px; height: 40px; font-size: 18px; text-align: center; 
+                                      border: 1px solid #ddd; border-radius: 8px; font-weight: 600;">
+
+                        <button type="button" 
+                                onclick="scanner.incrementOwnCup()" 
+                                style="width: 40px; height: 40px; font-size: 20px; font-weight: bold; 
+                                       background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; 
+                                       cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            +
+                        </button>
+                    </div>
+                    
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">
+                        Скидка 30₽ за каждый стакан
+                    </p>
+                </div>
+                
+                <button class="menu-btn" onclick="scanner.processResult()">Подтвердить</button>
+            </div>
+    
+        </div>
+    </div>
+
+    <div id="coupon-scanner-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Отсканируйте QR-код</h3>
+            <div id="coupon-qr-reader"></div>
+            <div id="scan-result" class="scan-result hidden">
+                <div id="scan-result-icon"></div>
+                <div id="scan-result-message"></div>
+                <div id="scan-result-actions"></div>
+            </div>
+            <button class="btn-secondary" onclick="app.closeCouponScanner()">Закрыть</button>
+        </div>
+    </div>
+    
+    <div id="discount-selection-screen" class="screen hidden">
+        <div class="discount-container">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Выберите напиток</h2>
+            <p class="subtitle">Со скидкой 30%</p>
+            
+            <div class="drink-grid" id="discount-drink-grid">
+            </div>
+        </div>
+    </div>
+
+    <div id="discount-qr-screen" class="screen hidden">
+        <div class="qr-container">
+            <h2>Ваш купон</h2>
+            <div class="qr-image-container">
+                <img id="discount-qr-image" src="" alt="QR Code">
+            </div>
+            <div class="qr-info">
+                <p><strong>Напиток:</strong> <span id="discount-drink-name"></span></p>
+                <p><strong>Лотерейный номер:</strong> <span id="lottery-number"></span></p>
+                <p>Покажите этот код бариста для получения скидки 30%</p>
+            </div>
+            <button class="btn-primary" onclick="app.finishDiscountFlow()">
+                Готово
+            </button>
+        </div>
+    </div>
+
+    <div id="lottery-check-screen" class="screen hidden">
+        <div class="auth-container">
+          <button class="back-btn" onclick="app.goBack()">Назад</button>
+          <h2>Проверка победителя</h2>
+          <p class="subtitle">Введите ваш лотерейный номер</p>
+          <form id="lottery-check-form" class="auth-form">
+            <div class="form-group">
+              <label for="lottery-check-number">Номер лотереи</label>
+              <input 
+                type="text" 
+                id="lottery-check-number" 
+                placeholder="Введите 8 цифр" 
+                required
+                maxlength="8"
+                pattern="[0-9]{8}"
+              >
+            </div>
+            <button type="submit" class="btn-primary">Проверить</button>
+          </form>
+          <div id="lottery-result" class="scan-result hidden"></div>
+        </div>
+    </div>
+
+    <div id="milk-order-screen" class="screen hidden">
+        <div class="screen-header">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Заказ молока вт/чт</h2>
+            <button class="fab-icon fab-history" onclick="employee.showOrdersHistoryModal()" title="История заказов">
+                ⋮
+            </button>
+        </div>
+        
+        <div class="screen-content">
+            <section class="milk-section">
+                <h3 class="section-title"> </h3>
+                <div id="milk-products-grid" class="milk-products-grid">
+                    <p class="loading">Загрузка товаров...</p>
+                </div>
+            </section>
+        </div>
+
+        <button class="fab-cart" onclick="employee.showCartModal()" title="Корзина">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+            <span id="cart-badge" class="cart-badge hidden">0</span>
+        </button>
+    </div>
+
+    <div id="cart-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="employee.hideCartModal()"></div>
+        <div class="modal-content modal-cart">
+            <div class="modal-header">
+                <h3>Корзина</h3>
+                <button class="modal-close" onclick="employee.hideCartModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="cart-items-modal" class="cart-items-modal">
+                    <p class="empty-cart">Корзина пуста</p>
+                </div>
+                <div class="cart-total-modal">
+                    <span>Всего:</span>
+                    <strong id="cart-total-modal">0 шт.</strong>
+                </div>
+                <textarea id="milk-order-comment-modal" class="milk-comment" 
+                          placeholder="Комментарий к заказу (необязательно). К примеру: если не получится заказать молока хватит до ..."></textarea>
+                <button id="milk-submit-btn-modal" class="menu-btn btn-full" 
+                        onclick="employee.submitMilkOrder()" disabled>
+                    Оформить заказ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="orders-history-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="employee.hideOrdersHistoryModal()"></div>
+        <div class="modal-content modal-history">
+            <div class="modal-header">
+                <h3>Ранее заказывали</h3>
+                <button class="modal-close" onclick="employee.hideOrdersHistoryModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="orders-history-modal-list" class="orders-history-modal">
+                    <p class="loading">Загрузка...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalConfirmDelivery" class="custom-modal-overlay" style="display: none;">
+        <div class="custom-modal">
+            <button class="back-btn" onclick="employee.closeModal('modalConfirmDelivery')">Назад</button>
+            <h3>Подтверждение доставки</h3>
+            <p>Заказ <span id="modalOrderId"></span></p>
+            <p class="modal-question">Все ли молоко приехало?</p>
+            <div class="modal-actions">
+                <button class="btn btn-success" onclick="employee.handleAllArrived()">Да, всё приехало</button>
+                <button class="btn btn-warning" onclick="employee.showProblemModal()">Нет, есть недовоз</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalEditOrder" class="custom-modal-overlay" style="display: none;">
+        <div class="custom-modal custom-modal-large">
+            <h3>Редактирование</h3>
+            <p class="modal-subtitle">− если позиция не приехала в полном объеме</p>
+
+            <div id="orderItemsList" class="order-items-list"></div>
+    
+            <div class="comment-section">
+                <label>Комментарий для администратора и коллег:</label>
+                <textarea id="editOrderComment" class="modal-textarea" placeholder="Например: довезут или сделали вычерк"></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn menu-btn" onclick="employee.submitEditedOrder()">Сохранить</button>
+                <button class="btn menu-btn" onclick="employee.closeModal('modalEditOrder')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-milk-orders-screen" class="screen hidden">
+        <div class="screen-header">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Заказы молока</h2>
+        </div>
+        
+        <div class="screen-content">
+            <div id="admin-milk-stats" class="admin-stats-grid">
+            </div>
+
+            <div id="admin-milk-orders-list" class="admin-orders-list">
+                <p class="loading">Загрузка заказов...</p>
+            </div>
+
+            <div class="admin-actions">
+                <button class="menu-btn" onclick="admin.exportMilkOrders()">
+                    Скопировать список
+                </button>
+                <button class="menu-btn" onclick="admin.loadMilkOrders()">
+                    Обновить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="role-selection-screen" class="screen hidden">
+        <div class="screen-header">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Начать смену</h2>
+        </div>
+        
+        <div class="role-container">
+            <h3>Выберите роль:</h3>
+            
+            <div class="role-card" data-role="employee" onclick="employee.selectRole('employee')">
+                <div class="role-icon"></div>
+                <h4>Сотрудник</h4>
+                <p>Основная смена</p>
+            </div>
+            
+            <div class="role-card" data-role="helper" onclick="employee.selectRole('helper')">
+                <div class="role-icon"></div>
+                <h4>Помощник</h4>
+                <p>Помощь на точке</p>
+            </div>
+            
+            <div class="role-card" data-role="change" onclick="employee.selectRole('change')">
+                <div class="role-icon"></div>
+                <h4>Сменщик</h4>
+                <p>Замена сотрудника</p>
+            </div>
+        </div>
+        
+        <button class="menu-btn" onclick="employee.startShiftFlow()">
+            Начать смену
+        </button>
+    </div>
+
+    <div id="point-confirmation-screen" class="screen hidden">
+        <div class="screen-header">
+            <button class="back-btn" onclick="app.goBack()">Назад</button>
+            <h2>Точка</h2>
+        </div>
+    
+        <div class="confirmation-content">
+            <div class="detected-point">
+                <h3>Определили вашу точку:</h3>
+                <div class="point-info">
+                    <h4 id="detected-point-name">Загрузка...</h4>
+                    <p id="detected-distance"> ... км</p>
+                </div>
+            </div>
+    
+            <button class="menu-btn" onclick="employee.confirmShift()">
+                Подтвердить
+            </button>
+    
+            <button class="menu-btn" onclick="employee.showPointsList()">
+                Выбрать другую точку
+            </button>
+    
+            <div id="points-list" class="points-list hidden">
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src='telegram-web-app.js'></script> <!-- Загрузка идет из скачанного json из-за блокировок, так как доступ к приложению нужен без VPN через другие платформы-->
+    <script src="https://st.max.ru/js/max-web-app.js"></script>
+    <script src="https://unpkg.com/imask"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/qr_scaner.js"></script>
+    <script src="js/profiles/user.js"></script>
+    <script src="js/profiles/employee.js"></script>
+    <script src="js/profiles/admin.js"></script>
+    <script src="js/profiles/smm.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>
