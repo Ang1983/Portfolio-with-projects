@@ -1,0 +1,13 @@
+aiogram==2.23.1
+aiosqlite==0.21.0
+APScheduler==3.11.0
+gspread_pandas==3.3.0
+python-dotenv==1.0.0
+pandas==2.3.1
+tzlocal
+cachetools
+matplotlib
+Pillow
+redis>=4.5.0
+asyncpg
+maxapi
