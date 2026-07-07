@@ -1,0 +1,292 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<style>
+    .matrix-container { display: flex; gap: 20px; font-family: sans-serif; }
+    
+    /* Sidebar */
+    .sidebar { 
+        width: 250px; 
+        background: #f8f9fa; 
+        padding: 15px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+    .sidebar h3 { margin-top: 0; color: #333; }
+    .sidebar-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+    .sidebar-total { font-weight: bold; border-top: 1px solid #ccc; padding-top: 10px; margin-top: 10px; }
+
+    /* Main Table */
+    .main-table-wrapper { flex: 1; overflow-x: auto; }
+    table.expense-matrix { 
+        border-collapse: collapse; 
+        width: 100%; 
+        font-size: 13px;
+    }
+    th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+    
+    th { background: #e9ecef; position: sticky; top: 0; }
+    
+    /* Category Header Row */
+    tr.cat-header td { 
+        background: #d1d5db; 
+        font-weight: bold; 
+        text-align: left; 
+        padding-left: 10px;
+    }
+    
+    /* Date Row */
+    tr.date-row td:first-child { text-align: left; background: #f8f9fa; }
+    
+    /* Editable cells */
+    td.editable { cursor: pointer; background: #fff; }
+    td.editable:focus { outline: 2px solid #4CAF50; background: #e8f5e9; }
+    td.editable:hover { background: #f1f1f1; }
+    
+    /* Totals Row */
+    tr.total-row td { font-weight: bold; background: #e2e6ea; }
+    
+    /* Grand Total Column */
+    td.row-total { background: #fff3cd; font-weight: bold; }
+
+    .loading { text-align: center; padding: 20px; display: none; }
+        /* Month Selector */
+    .controls { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
+    input[type="month"] { padding: 5px; font-size: 14px; }
+</style>
+
+<div class="controls">
+    <label>Период:</label>
+    <input type="month" id="month-picker" value="{{ current_month }}">
+    <button onclick="loadData()">Обновить</button>
+    <span class="loading" id="loader">Загрузка...</span>
+</div>
+
+<div class="matrix-container">
+    <div class="sidebar" id="sidebar">
+        <h3>Расходы по категориям</h3>
+        <div id="sidebar-content"></div>
+    </div>
+
+    <div class="main-table-wrapper">
+        <table class="expense-matrix" id="matrix-table">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Дата / Категория</th>
+                </tr>
+            </thead>
+            <tbody id="matrix-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+
+    const now = new Date();
+    document.getElementById('month-picker').value = now.toISOString().slice(0, 7);
+    
+    let currentData = null;
+
+    async function loadData() {
+        const month = document.getElementById('month-picker').value;
+        const loader = document.getElementById('loader');
+        loader.style.display = 'inline';
+
+        try {
+            const response = await fetch(`/api/expense-matrix/?month=${month}`, {
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await response.json();
+            currentData = data;
+            renderTable(data);
+            renderSidebar(data);
+        } catch (e) {
+            console.error(e);
+            alert('Ошибка загрузки данных');
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('matrix-body');
+        const thead = document.querySelector('.expense-matrix thead tr');
+
+        while (thead.children.length > 1) thead.removeChild(thead.lastChild);
+
+        data.points.forEach(point => {
+            const th = document.createElement('th');
+            th.textContent = point;
+            thead.appendChild(th);
+        });
+
+        const thTotal = document.createElement('th');
+        thTotal.textContent = "Итого по дате";
+        thead.appendChild(thTotal);
+
+        tbody.innerHTML = '';
+
+        let grandTotal = 0;
+        let columnTotals = new Array(data.points.length).fill(0);
+
+        data.categories.forEach((cat, catIndex) => {
+            const catRow = document.createElement('tr');
+            catRow.className = 'cat-header';
+            const catCell = document.createElement('td');
+            catCell.colSpan = data.points.length + 2;
+            catCell.textContent = cat.category_name;
+            catRow.appendChild(catCell);
+            tbody.appendChild(catRow);
+
+            let catTotal = 0;
+
+            cat.dates.forEach(dateData => {
+                const row = document.createElement('tr');
+                row.className = 'date-row';
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = dateData.date;
+                row.appendChild(dateCell);
+
+                let rowSum = 0;
+
+                data.points.forEach((point, pIndex) => {
+                    const td = document.createElement('td');
+                    td.className = 'editable';
+                    td.contentEditable = true;
+                    
+                    const val = dateData[point] || 0;
+                    td.textContent = val;
+
+                    td.dataset.categoryId = cat.category_id;
+                    td.dataset.point = point;
+                    td.dataset.date = dateData.date;
+
+                    td.addEventListener('blur', function() {
+                        saveCell(this);
+                    });
+
+                    td.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.blur();
+                        }
+                    });
+
+                    rowSum += parseFloat(val);
+                    columnTotals[pIndex] += parseFloat(val);
+                    
+                    row.appendChild(td);
+                });
+
+                const totalCell = document.createElement('td');
+                totalCell.className = 'row-total';
+                totalCell.textContent = rowSum.toFixed(2);
+                row.appendChild(totalCell);
+                
+                catTotal += rowSum;
+                tbody.appendChild(row);
+            });
+
+            const catTotalRow = document.createElement('tr');
+            catTotalRow.className = 'total-row';
+            const totalLabel = document.createElement('td');
+            totalLabel.textContent = `Итого ${cat.category_name}`;
+            catTotalRow.appendChild(totalLabel);
+
+            for(let i=0; i<data.points.length; i++) {
+                const td = document.createElement('td');
+                td.textContent = columnTotals[i].toFixed(2);
+                catTotalRow.appendChild(td);
+            }
+             const catGrandTotal = document.createElement('td');
+             catGrandTotal.textContent = catTotal.toFixed(2);
+             catTotalRow.appendChild(catGrandTotal);
+
+             grandTotal += catTotal;
+        });
+
+        const grandRow = document.createElement('tr');
+        grandRow.className = 'total-row';
+        grandRow.style.backgroundColor = '#ffe0b2';
+        
+        const grandLabel = document.createElement('td');
+        grandLabel.textContent = "ОБЩИЙ ИТОГ";
+        grandRow.appendChild(grandLabel);
+        
+        columnTotals.forEach(sum => {
+            const td = document.createElement('td');
+            td.textContent = sum.toFixed(2);
+            grandRow.appendChild(td);
+        });
+        
+        const finalTotal = document.createElement('td');
+        finalTotal.textContent = grandTotal.toFixed(2);
+        grandRow.appendChild(finalTotal);
+        
+        tbody.appendChild(grandRow);
+    }
+
+    function renderSidebar(data) {
+        const container = document.getElementById('sidebar-content');
+        container.innerHTML = '';
+        
+        let grandTotal = 0;
+
+        data.categories.forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'sidebar-item';
+            div.innerHTML = `
+                <span>${cat.category_name}</span>
+                <span>${cat.total.toFixed(2)}</span>
+            `;
+            container.appendChild(div);
+            grandTotal += cat.total;
+        });
+
+        const totalDiv = document.createElement('div');
+        totalDiv.className = 'sidebar-item sidebar-total';
+        totalDiv.innerHTML = `
+            <span>ВСЕГО РАСХОДОВ</span>
+            <span>${grandTotal.toFixed(2)}</span>
+        `;
+        container.appendChild(totalDiv);
+    }
+
+    async function saveCell(cell) {
+        const newVal = cell.textContent.trim();
+        const oldVal = cell.dataset.originalValue || cell.textContent;
+        
+        const payload = {
+            category_id: cell.dataset.categoryId,
+            point_code: cell.dataset.point,
+            date: cell.dataset.date,
+            amount: newVal
+        };
+
+        try {
+            const res = await fetch('/api/expense-update/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (res.ok) {
+                cell.style.background = '#d4edda';
+                setTimeout(() => cell.style.background = '', 1000);
+            } else {
+                alert('Ошибка сохранения');
+                cell.textContent = oldVal;
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    loadData();
+</script>
+{% endblock %}

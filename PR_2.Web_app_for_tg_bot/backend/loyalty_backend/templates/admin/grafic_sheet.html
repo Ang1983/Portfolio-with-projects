@@ -1,0 +1,389 @@
+{% extends "admin/base_site.html" %}
+{% load grafic_tags %}
+
+{% block content %}
+<style>
+    * { box-sizing: border-box; }
+    
+    .grafic-wrapper {
+        padding: 20px;
+        background: linear-gradient(135deg);
+        min-height: 100vh;
+    }
+    
+    .grafic-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .grafic-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .grafic-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #d4ffe5 100%);
+        color: black;
+        box-shadow: 0 4px 15px rgba(156, 255, 194, 0.4);
+    }
+    
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(186, 255, 213, 0.6);
+    }
+
+    .btn-generate {
+        background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+        color: white;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+    }
+    .btn-generate:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none;
+    }
+    
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+    
+    .grafic-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: auto;
+        max-height: calc(100vh - 250px);
+    }
+
+    .grafic-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 12px;
+    }
+    
+    .grafic-table th {
+        background: linear-gradient(135deg, #f0e2fe 100%);
+        color: black;
+        font-weight: 600;
+        text-align: center;
+        padding: 10px 5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        white-space: normal;
+        word-wrap: break-word;
+        border-right: 1px solid rgba(255,255,255,0.2);
+        text-transform: none;
+        border-bottom: 3px solid #2d3748;
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+        vertical-align: middle;
+        line-height: 1.3;
+    }
+
+    .grafic-table th:first-child {
+        left: 0;
+        z-index: 20;
+        background: linear-gradient(135deg, #f0e2fe 100%);
+        min-width: 140px;
+        max-width: 140px;
+        width: 140px;
+        border-right: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .grafic-table td {
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0;
+        text-align: center;
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+    }
+
+    .grafic-table td:first-child {
+        position: sticky;
+        left: 0;
+        background: #f7fafc;
+        font-weight: 600;
+        color: #2d3748;
+        z-index: 5;
+        border-right: 2px solid #cbd5e0;
+        min-width: 140px;
+        max-width: 140px;
+        width: 140px;
+    }
+
+    .grafic-input {
+        width: 100%;
+        border: none;
+        padding: 6px 4px;
+        font-size: 11px;
+        text-align: center;
+        background: transparent;
+        transition: all 0.2s;
+    }
+
+    .grafic-table tr:hover td { background: #f0f4ff; }
+    .grafic-table tr:hover td:first-child { background: #e6efff; }
+    .grafic-table tr.weekend td { background: #fed7aa !important; }
+    .grafic-table tr.weekend td:first-child { background: #f2b27d !important; font-weight: 700; color: #7c2d12; }
+    .grafic-table tr.weekend:hover td { background: #fdba74 !important; }
+    .grafic-table tr.week-divider td { border-bottom: 2px solid #2d3748 !important; }
+    .grafic-table tr.week-divider td:first-child { border-bottom: 2px solid #2d3748 !important; }
+    
+    .grafic-input:focus {
+        outline: none;
+        background: #fff;
+        box-shadow: inset 0 0 0 2px #bdc9ff;
+    }
+    
+    .grafic-input.has-value {
+        background: #f0fff4;
+        color: #22543d;
+        font-weight: 600;
+    }
+    
+    .grafic-input.weekend-input { background: #ffedd5; }
+    .grafic-input.weekend-input:focus { box-shadow: inset 0 0 0 2px #fb923c; background: #fff; }
+    
+    .day-of-week { display: inline-block; margin-left: 5px; font-size: 10px; color: #64748b; font-weight: 600; }
+    .weekend .day-of-week { color: #7c2d12; font-weight: 700; }
+    
+    #saveStatus {
+        margin-left: 15px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        display: none;
+    }
+    #saveStatus.show { display: inline-block; }
+    #saveStatus.success { background: #c6f6d5; color: #22543d; }
+    #saveStatus.error { background: #fed7d7; color: #742a2a; }
+    
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .saving { animation: pulse 1s infinite; }
+</style>
+
+<div class="grafic-wrapper">
+    <div class="grafic-header">
+        <h1 class="grafic-title">{{ title }}</h1>
+        
+        <div class="grafic-actions">
+            <a href="?month={{ prev_month }}" class="btn btn-primary">← Предыдущий месяц</a>
+            <a href="?month={{ next_month }}" class="btn btn-primary">Следующий месяц →</a>
+            
+            <button class="btn btn-success" onclick="saveGrafic()" id="saveBtn">Сохранить</button>
+            <button class="btn btn-generate" onclick="runOptimization()" id="optimizeBtn">Сгенерировать график</button>
+            
+            <span id="saveStatus"></span>
+        </div>
+    </div>
+
+    <div class="grafic-container">
+        <table class="grafic-table">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    {% for col in db_columns %}
+                    <th title="{{ col }}">{{ col|split_name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr class="{% if row.date|date:'w' == '0' or row.date|date:'w' == '6' %}weekend{% endif %}">
+                    <td>
+                        {{ row.date|date:"d.m.Y" }}
+                        <span class="day-of-week">
+                            {% if row.date|date:'w' == '1' %}пн{% elif row.date|date:'w' == '2' %}вт{% elif row.date|date:'w' == '3' %}ср{% elif row.date|date:'w' == '4' %}чт{% elif row.date|date:'w' == '5' %}пт{% elif row.date|date:'w' == '6' %}сб{% elif row.date|date:'w' == '0' %}вс{% endif %}
+                        </span>
+                    </td>
+                    {% for col in db_columns %}
+                    <td>
+                        <input type="text" 
+                               class="grafic-input {% if row|get_item:col %}has-value{% endif %} {% if row.date|date:'w' == '0' or row.date|date:'w' == '6' %}weekend-input{% endif %}"
+                               data-date="{{ row.date|date:'Y-m-d' }}"
+                               data-column="{{ col }}"
+                               value="{{ row|get_item:col|default:'' }}"
+                               placeholder=""
+                               onchange="markChanged(this)"
+                               onkeydown="handleEnterKey(event, this); handleShiftEnterKey(event, this)">
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                {% if row.date|date:'w' == '0' %}
+                <tr class="week-divider">
+                    <td colspan="{{ db_columns|length|add:1 }}" style="border-bottom: 3px solid #2d3748; height: 0; padding: 0;"></td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let hasChanges = false;
+
+function handleEnterKey(event, input) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const currentTd = input.closest('td');
+        const columnIndex = currentTd.cellIndex;
+        const currentRow = currentTd.closest('tr');
+        let nextRow = currentRow.nextElementSibling;
+        while (nextRow && nextRow.classList.contains('week-divider')) nextRow = nextRow.nextElementSibling;
+        if (nextRow) {
+            const nextInput = nextRow.querySelectorAll('.grafic-input')[columnIndex - 1];
+            if (nextInput) { nextInput.focus(); nextInput.select(); }
+        }
+    }
+}
+
+function handleNavigation(event, input) {
+    const currentTd = input.closest('td');
+    const columnIndex = currentTd.cellIndex;
+    const currentRow = currentTd.closest('tr');
+    const table = document.querySelector('.grafic-table tbody');
+    const rows = Array.from(table.querySelectorAll('tr:not(.week-divider)'));
+    const currentRowIndex = rows.indexOf(currentRow);
+    
+    let targetRow = null, targetColumnIndex = columnIndex;
+    if (event.key === 'ArrowDown' || (event.key === 'Enter' && !event.shiftKey)) { event.preventDefault(); targetRow = currentRowIndex < rows.length - 1 ? rows[currentRowIndex + 1] : rows[0]; }
+    else if (event.key === 'ArrowUp' || (event.key === 'Enter' && event.shiftKey)) { event.preventDefault(); targetRow = currentRowIndex > 0 ? rows[currentRowIndex - 1] : rows[rows.length - 1]; }
+    else if (event.key === 'ArrowRight') { event.preventDefault(); targetRow = currentRow; targetColumnIndex = columnIndex + 1; }
+    else if (event.key === 'ArrowLeft') { event.preventDefault(); targetRow = currentRow; targetColumnIndex = columnIndex - 1; }
+
+    if (targetRow) {
+        const inputs = targetRow.querySelectorAll('.grafic-input');
+        const targetInput = inputs[targetColumnIndex - 1];
+        if (targetInput) { targetInput.focus(); targetInput.select(); }
+    }
+}
+
+function markChanged(input) {
+    hasChanges = true;
+    if (input.value.trim()) input.classList.add('has-value'); else input.classList.remove('has-value');
+    document.getElementById('saveBtn').classList.add('saving');
+}
+
+async function saveGrafic() {
+    if (!hasChanges) { showStatus('Нет изменений для сохранения', 'error'); return; }
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.innerHTML = 'Сохранение...';
+    
+    const data = [];
+    document.querySelectorAll('.grafic-input').forEach(input => data.push({ date: input.dataset.date, column: input.dataset.column, value: input.value }));
+    
+    try {
+        const response = await fetch('/admin/grafic-save/', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            showStatus('График сохранён!', 'success');
+            hasChanges = false;
+            document.querySelectorAll('.grafic-input').forEach(input => { if (input.value.trim()) input.classList.add('has-value'); else input.classList.remove('has-value'); });
+        } else throw new Error(result.message);
+    } catch (error) { showStatus('Ошибка: ' + error.message, 'error'); }
+    setTimeout(() => { btn.disabled = false; btn.classList.remove('saving'); btn.innerHTML = 'Сохранить'; }, 3000);
+}
+
+async function runOptimization() {
+    const btn = document.getElementById('optimizeBtn');
+    if (!confirm('Текущий сгенерированный график на следующий месяц будет полностью заменён результатами оптимизации.')) return;
+
+    const nextMonthStr = "{{ next_month }}";
+    const [optYear, optMonth] = nextMonthStr.split('-').map(Number);
+
+    btn.disabled = true;
+    btn.innerHTML = 'Генерация...';
+    showStatus('Запуск', 'success');
+
+    try {
+        const response = await fetch('/api/optimize/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ year: optYear, month: optMonth })
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            showStatus(`График сгенерирован! Назначено смен: ${result.shifts_count || '?'}. Перезагружаю страницу...`, 'success');
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showStatus((result.message || result.error || 'Не удалось найти допустимое расписание. Проверьте пожелания сотрудников.'), 'error');
+        }
+    } catch (error) {
+        showStatus('Ошибка сети или сервера: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Сгенерировать график';
+    }
+}
+
+function showStatus(message, type) {
+    const status = document.getElementById('saveStatus');
+    status.textContent = message;
+    status.className = 'show ' + type;
+    setTimeout(() => status.classList.remove('show'), 6000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+window.addEventListener('beforeunload', function(e) { if (hasChanges) { e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('keydown', function(e) { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveGrafic(); } });
+</script>
+{% endblock %}

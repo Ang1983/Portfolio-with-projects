@@ -1,0 +1,286 @@
+{% load grafic_tags %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .grafic-wrapper {
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .grafic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .grafic-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0;
+        }
+        
+        .grafic-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-primary:hover {
+            background: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                padding: 6px 12px; 
+                font-size: 12px; 
+                gap: 4px; 
+            }
+
+            .grafic-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+        }
+        
+        .grafic-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: auto;
+            max-height: calc(100vh - 150px);
+        }
+        
+        .grafic-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12px;
+        }
+    
+        .grafic-table th {
+            background: linear-gradient(135deg, #f0e2fe 100%);
+            color: black;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px 5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: normal;
+            word-wrap: break-word;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            text-transform: none;
+            border-bottom: 3px solid #2d3748;
+            width: 85px;
+            min-width: 85px;
+            max-width: 85px;
+            vertical-align: middle;
+            line-height: 1.3;
+        }
+
+        .grafic-table th:first-child {
+            left: 0;
+            z-index: 20;
+            background: linear-gradient(135deg, #f0e2fe 100%);
+            min-width: 100px;
+            max-width: 100px;
+            width: 100px;
+            border-right: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .grafic-table td {
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0;
+            text-align: center;
+            width: 85px;
+            min-width: 85px;
+            max-width: 85px;
+        }
+
+        .grafic-table td:first-child {
+            position: sticky;
+            left: 0;
+            background: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+            z-index: 5;
+            border-right: 2px solid #cbd5e0;
+            min-width: 100px;
+            max-width: 100px;
+            width: 100px;
+        }
+
+        .grafic-cell {
+            display: block;
+            width: 100%;
+            padding: 6px 4px;
+            font-size: 11px;
+            text-align: center;
+            background: transparent;
+            min-width: 85px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        
+        .grafic-table tr:hover td {
+            background: #f0f4ff;
+        }
+        
+        .grafic-table tr:hover td:first-child {
+            background: #e6efff;
+        }
+
+        .grafic-table tr.weekend td {
+            background: #fed7aa !important;
+        }
+        
+        .grafic-table tr.weekend td:first-child {
+            background: #fed7aa !important;
+            font-weight: 700;
+            color: #7c2d12;
+        }
+        
+        .grafic-table tr.weekend:hover td {
+            background: #fed7aa !important;
+        }
+
+        .grafic-table tr.week-divider td {
+            border-bottom: 2px solid #2d3748 !important;
+        }
+        
+        .grafic-table tr.week-divider td:first-child {
+            border-bottom: 2px solid #2d3748 !important;
+        }
+
+        .day-of-week {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .weekend .day-of-week {
+            color: #7c2d12;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grafic-wrapper">
+    <div class="grafic-header">
+        <h1 class="grafic-title">{{ title }}</h1>
+        
+        <div class="grafic-actions">
+            <a href="?month={{ prev_month }}" class="btn btn-primary">
+                Предыдущий месяц
+            </a>
+            
+            <a href="?month={{ next_month }}" class="btn btn-primary">
+                Следующий месяц
+            </a>
+        </div>
+    </div>
+    
+    <div class="grafic-container">
+        <table class="grafic-table">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    {% for col in db_columns %}
+                    <th title="{{ col }}">
+                        {{ col|split_name }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr class="{% if row.date|date:'w' == '0' or row.date|date:'w' == '6' %}weekend{% endif %}">
+                    <td>
+                        {{ row.date|date:"d.m.Y" }}
+                        <span class="day-of-week">
+                            {% if row.date|date:'w' == '1' %}пн
+                            {% elif row.date|date:'w' == '2' %}вт
+                            {% elif row.date|date:'w' == '3' %}ср
+                            {% elif row.date|date:'w' == '4' %}чт
+                            {% elif row.date|date:'w' == '5' %}пт
+                            {% elif row.date|date:'w' == '6' %}сб
+                            {% elif row.date|date:'w' == '0' %}вс{% endif %}
+                        </span>
+                    </td>
+                    {% for col in db_columns %}
+                    <td>
+                        <span class="grafic-cell 
+                                     {% if row|get_item:col %}has-value{% endif %} 
+                                     {% if row.date|date:'w' == '0' or row.date|date:'w' == '6' %}weekend-cell{% endif %}">
+                            {{ row|get_item:col|default:'' }}
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                {% if row.date|date:'w' == '0' %}
+                <tr class="week-divider">
+                    <td colspan="{{ db_columns|length|add:1 }}" style="border-bottom: 3px solid #2d3748; height: 0; padding: 0;"></td>
+                </tr>
+                {% endif %}
+                
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
