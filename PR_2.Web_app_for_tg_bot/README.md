@@ -1,67 +1,69 @@
-# PR_2: Система лояльности (Telegram Mini App)
+# PR_2: Loyalty System (Telegram Mini App)
 
-## Проблема
-Сеть кофеен нуждается в системе лояльности для повышения retention клиентов и увеличения повторных продаж.
+## The Problem
+A coffee shop chain needs a loyalty system to increase customer retention and boost repeat sales.
 
-## Решение
-Разрабатана системв лояльности на базе Telegram Mini App с функционалом:
-- Регистрация клиентов через Telegram
-- Накопление бонусов за покупки
-- История транзакций и баланса
-- Административная панель для управления клиентами и акциями
+## The Solution
+Developed a comprehensive loyalty system based on a Telegram Mini App with the following functionality:
+- Seamless customer registration via Telegram
+- Bonus point accumulation for purchases
+- Transaction and balance history tracking
+- Admin panel for managing customers, promotions, and analytics
 
-## Технологии
+## Tech Stack
 **Backend:**
 - **Python 3.10+**
-- **Django** - веб-фреймворк для REST API
-- **PostgreSQL** - реляционная база данных
+- **Django** - Web framework for building the REST API
+- **PostgreSQL** - Relational database
 
 **Frontend:**
 - **JavaScript**
 - **HTML5 / CSS3**
-- **Telegram Web App API** - интеграция с Telegram
+- **Telegram Web App API** - For seamless Telegram integration
 
-**Инструменты:**
-- **Git** - контроль версий
-- **Postman** - тестирование API
-- **Docker** - контейнеризация
+**Tools:**
+- **Git** - Version control
+- **Postman** - API testing
+- **Docker** - Containerization
 
-## Структура проекта
+## Project Structure
+
 ```markdown
 PR_2.Web_app_for_tg_bot/
-── backend/
-   ── loyalty_backend/
-      ── views.py          # Эндпоинты
-      ── models.py
-      ── serializers.py
-      ── admin.py          # Администрирование сайта
-      ── urls.py           # Пути для api
-   ── requirements.txt
-── frontend/
-   ── index.html           # Главная страница
-   ── js 
-      ── profiles          # Профили
-         ── admin.js
-         ── user.js
-         ── employee.js
-      ── auth.js           # Методы аутентификации
-      ── main.js           # Основные методы, которые не проходят в профили
-      ── coupon.js         # Методы для купонов
-      ── qr_scaner.js
-── READ.ME
+├── backend/
+│   └── loyalty_backend/
+│       ├── views.py          # API endpoints
+│       ├── models.py         # Database models
+│       ├── serializers.py    # Data serialization
+│       ├── admin.py          # Django admin configuration
+│       └── urls.py           # API routes
+│   └── requirements.txt
+├── frontend/
+│   ├── index.html            # Main application page
+│   └── js/
+│       ├── profiles/         # Role-specific logic
+│       │   ├── admin.js
+│       │   ├── user.js
+│       │   └── employee.js
+│       ├── auth.js           # Authentication logic
+│       ├── main.js           # Core methods (shared across profiles)
+│       ├── coupon.js         # Coupon handling logic
+│       └── qr_scanner.js     # QR code scanning functionality
+└── README.md
 ```
 
-## Статус разработки
-На финальной стадии
+## Development Status
 
-Реализовано:
--	База данных PostgreSQL с миграциями
--	REST API для управления клиентами и транзакциями
--	Frontend для Telegram Mini App
--	Интеграция с Telegram Bot API
--	Деплой на сервер
--	Тестирование
-  
-В процессе:
-- Отладка временного шлюза в синхронизации
-- Интеграция с Wallet
+In the final stages
+
+Implemented:
+- PostgreSQL database setup with migrations
+- REST API for managing customers and transactions
+- Frontend interface for the Telegram Mini App
+- Integration with Telegram Bot API
+- Server deployment
+- Comprehensive testing
+
+In progress:
+- Debugging temporary synchronization gateways
+- Integration with Telegram Wallet
