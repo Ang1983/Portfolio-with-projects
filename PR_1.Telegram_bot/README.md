@@ -1,32 +1,34 @@
-# PR_1: Telegram Bot для автоматизации кофейни
+# PR_1: Telegram Bot for Coffee Shop Automation
 
-## Проблема
-Кофейня тратила 2 часа в неделю на ручное составление отчётов, расчёт зарплат и контроль опозданий. Высокий риск человеческих ошибок.
+## The Problem
+The coffee shop spent approximately 2 hours per week on manual report generation, payroll calculations, and attendance tracking, which led to a high risk of human error.
 
-## Решение
-Разработала и внедрила в production Telegram-бота, который автоматизирует:
-- Ежедневные напоминания о сменах и уборках на основе Google Таблиц (перенесено в PostgreSQL)
-- Автоматическую генерацию зарплатных ведомостей (расчёт → PNG → отправка в личные сообщения по расписанию)
-- Визуализацию KPI: опоздания сотрудников, выручка, выполнение стандартов
+## The Solution
+Developed and deployed a production-ready Telegram bot that automates:
+- Daily shift and cleaning reminders based on Google Sheets data (subsequently migrated to PostgreSQL).
+- Automated payroll statement generation (calculation → PNG generation → scheduled direct messages to employees).
+- Real-time KPI visualization: employee punctuality, daily revenue, and compliance with operational standards.
 
-## Технологии
+## Tech Stack
 - **Python 3.10+**
-- **aiogram** - асинхронный фреймворк для Telegram Bot API
-- **pandas** - обработка данных и расчёты
-- **matplotlib** - генерация графиков и PNG-изображений
-- **gspread_pandas** - интеграция с Google Sheets API
-- **schedule** - планировщик задач
+- **aiogram** - Asynchronous framework for the Telegram Bot API
+- **pandas** - Data processing and complex calculations
+- **matplotlib** - Graph and PNG image generation
+- **gspread_pandas** - Integration with Google Sheets API
+- **schedule** - Task scheduling and cron-like jobs
 
-## Структура проекта
+## Project Structure
+
 ```markdown
 PR_1.Telegram_bot/
-  ── main.py              # Основная логика бота, обработчики команд
-  ── database.py          # Работа с Google Sheets, чтение/запись данных
-  ── requirements.txt     # Зависимости проекта
-  ── READ.ME             # Документация
+  ├── main.py              # Core bot logic and command handlers
+  ├── database.py          # Database operations (Google Sheets / PostgreSQL), read/write logic
+  ├── requirements.txt     # Project dependencies
+  └── README.md            # Project documentation
 ```
-## Результаты
-- Сокращение времени на еженедельный отчёт: с 2 часов до 10 минут
-- Исключение ручных ошибок при расчёте зарплат
-- Автоматизация ежедневных напоминаний для сотрудников
-- Визуализация KPI в реальном времени
+
+## Key Results
+- 83% time reduction on weekly reporting (from 2 hours down to 10 minutes).
+- Elimination of manual errors in payroll calculations.
+- Full automation of daily operational reminders for the staff.
+- Real-time KPI visualization for better management oversight and decision-making.
